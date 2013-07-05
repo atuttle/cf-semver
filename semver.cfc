@@ -128,17 +128,31 @@ component extends="semverrules" {
 	};
 
 	//replaces the class method "inc"
-	this.incSemver = function(version, release, loose = false){
+	private function incSemver(version, release, loose = false){
 		try {
 			return new semver(version, loose)._inc(release).version;
 		}catch (any e){
 			return '';
 		}
-	};
+	}
 
 	//port of the instance method
-	this.inc = function(release){
-		switch(release){
+	this.inc = function(version, release, loose = false){
+
+
+		/*
+			this is a kind of wonky way to cram 2 methods into one, since CF doesn't have prototypes
+			if there are 3 arguments, shunt off to the private method; otherwise re-map arguments to
+			the desired method signature & continue...
+		*/
+		//if there's more than one argument, hand the request off to
+		if (arrayLen(arguments) >= 2){
+			return incSemver(version, release, loose);
+		}
+		//re-wire as per above comment
+		arguments.release = version;
+
+		switch(arguments.release){
 			case "major":
 				this.major++;
 				this.minor = -1;
