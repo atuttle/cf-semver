@@ -111,7 +111,7 @@ component extends="semverrules" {
 		return (id == '*' || lcase(id) == 'x');
 	}
 
-	private function parseComparator(comp, loose){
+	private function parseComparator(comp, loose = false){
 		arguments.comp = replaceTildes(arguments.comp, arguments.loose);
 		arguments.comp = replaceXRanges(arguments.comp, arguments.loose);
 		arguments.comp = replaceStars(arguments.comp, arguments.loose);
@@ -124,7 +124,7 @@ component extends="semverrules" {
 	// ~1.2, ~1.2.x, ~>1.2, ~>1.2.x --> >=1.2.0 <1.3.0
 	// ~1.2.3, ~>1.2.3 --> >=1.2.3 <1.3.0
 	// ~1.2.0, ~>1.2.0 --> >=1.2.0 <1.3.0
-	private function replaceTildes(comp, loose){
+	private function replaceTildes(comp, loose = false) {
 		var result = listToArray(trim(comp), ' ');
 		for (var i = 1; i <= arrayLen(result); i++){
 			result[i] = replaceTilde(result[i]);
@@ -132,7 +132,7 @@ component extends="semverrules" {
 		return arrayToList(result, ' ');
 	}
 
-	private function replaceTilde(comp, loose) {
+	private function replaceTilde(comp, loose = false) {
 		var r = (loose ? this.src[TILDELOOSE] : this.src[TILDE]);
 		var cleaner = function(_, Major, minor, patch, pre) {
 			var ret = '';
@@ -153,7 +153,7 @@ component extends="semverrules" {
 		return slipstream(comp, r, cleaner);
 	}
 
-	private function replaceXRanges(comp, loose) {
+	private function replaceXRanges(comp, loose = false) {
 		var result = listToArray(trim(comp), ' ');
 		for (var i = 1; i <= arrayLen(result); i++){
 			result[i] = replaceXRange(result[i]);
@@ -161,7 +161,7 @@ component extends="semverrules" {
 		return arrayToList(result, ' ');
 	}
 
-	private function replaceXRange(comp, loose) {
+	private function replaceXRange(comp, loose = false) {
 		arguments.comp = trim(arguments.comp);
 		var r = loose ? src[XRANGELOOSE] : src[XRANGE];
 		var cleaner = function(ret, gtlt, Major, minor, patch, pre) {
@@ -215,7 +215,7 @@ component extends="semverrules" {
 
 	// Because * is AND-ed with everything else in the comparator,
 	// and '' means "any version", just remove the *s entirely.
-	private function replaceStars(comp, loose) {
+	private function replaceStars(comp, loose = false) {
 		// Looseness is ignored here.  star is always as loose as it gets!
 		return reReplace(trim(comp), re[STAR], '', 'ALL');
 	}
@@ -258,7 +258,7 @@ component extends="semverrules" {
 		return true;
 	}
 
-	this.satisfies = function(version, range, loose) {
+	this.satisfies = function(version, range, loose = false) {
 		try {
 			range = new Range(range, loose);
 		} catch (any er) {
@@ -267,14 +267,14 @@ component extends="semverrules" {
 		return range.test(version);
 	}
 
-	this.maxSatisfying = function(versions, range, loose) {
+	this.maxSatisfying = function(versions, range, loose = false) {
 		//versions is an array of version strings
 		var matches = arrayFilter(versions, function(v){ return satisfies(v, range, loose); });
 		var sortedMatches = arraySort(matches, 'text', 'desc');
 		return (arrayLen(sortedMatches) > 0 ? sortedMatches[1] : '');
 	}
 
-	private function validRange(range, loose) {
+	private function validRange(range, loose = false) {
 		try {
 			// Return '*' instead of '' so that truthiness works.
 			// This will throw if it's invalid anyway
