@@ -316,6 +316,7 @@
 				var range = v[1];
 				var ver = v[2];
 				var loose = (arrayLen(v) >= 3) ? v[3] : false;
+				debug('ver=[' & ver & '] range=[' & range & '] result= ' & semver.satisfies(ver, range, loose));
 				assertTrue(!semver.satisfies(ver, range, loose), ver & ' not satisfied by ' & range);
 	    	}
 		);
