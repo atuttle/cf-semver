@@ -39,7 +39,7 @@
 		assertIsDefined("semver.cmp", "Missing `cmp` function");
 		assertIsDefined("semver.Comparator", "Missing `Comparator` function");
 		assertIsDefined("semver.range", "Missing `range` function");
-		assertIsDefined("semver.toComparators", "Missing `toComparators` function");
+		// assertIsDefined("semver.toComparators", "Missing `toComparators` function");
 		assertIsDefined("semver.satisfies", "Missing `satisfies` function");
 		assertIsDefined("semver.maxSatisfying", "Missing `maxSatisfying` function");
 		assertIsDefined("semver.validRange", "Missing `validRange` function");
