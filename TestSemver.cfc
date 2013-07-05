@@ -45,6 +45,19 @@
 		assertIsDefined("semver.validRange", "Missing `validRange` function");
 	}
 
+	function simple_contsructor_tests(){
+		var a = new semver('1.0.0');
+		var b = new semver(a);
+		var c = new semver(a, true);
+		debug(a);
+		debug(b);
+		debug(c);
+		assertEquals(a.version, b.version);
+		assertEquals(a.loose, b.loose);
+		assertEquals(false, a.loose);
+		assertEquals(true, c.loose);
+	}
+
 	function comparison_tests(){
 		// [version1, version2]
 		// version1 should be greater than version2
