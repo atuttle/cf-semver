@@ -1,6 +1,7 @@
 <cfcomponent extends="mxunit.framework.TestCase"><cfscript>
 
 	variables.semver = createObject("component", "semver");
+	variables.range = createObject("component", "range");
 
 	//before suite
 	function beforeTests(){}
@@ -205,7 +206,7 @@
 				,['<= 2.0.0', '1.9999.9999']
 				,['<=  2.0.0', '0.2.9']
 				,['<    2.0.0', '1.9999.9999']
-				,['<\t2.0.0', '0.2.9']
+				,['<	2.0.0', '0.2.9']
 				,['>=0.1.97', 'v0.1.97', true]
 				,['>=0.1.97', '0.1.97']
 				,['0.1.20 || 1.2.4', '1.2.4']
@@ -550,12 +551,12 @@
 				var loose = v[1];
 				var strict = v[2];
 				try{
-					semver.semver(loose);
+					new semver(loose);
 					fail('expected throw for semver.semver("#loose#")');
 				}catch(any e){
 					//don't fail, expected throw
 				}
-				var lv = semver.semver(loose, true);
+				var lv = new semver(loose, true);
 				assertEquals(strict, lv.version);
 				assertTrue(semver.eq(loose, strict, true));
 				try{
@@ -565,7 +566,7 @@
 					//don't fail, expected throw
 				}
 				try{
-					semver.compare(semver.semver(strict), loose);
+					semver.compare(new semver(strict), loose);
 					fail('expected throw for semver.compare(semver.semver("#strict#"), "#loose#")');
 				}catch(any e){
 					//don't fail, expected throw
