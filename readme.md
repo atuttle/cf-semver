@@ -2,9 +2,13 @@
 
 Semantic Version parsing, management, etc for CFML. It conforms to the [SemVer 2.0.0 specification](http://semver.org/spec/v2.0.0.html).
 
-## Contributors
+## Contributing
 
 Want to help out? Found a bug? Great! Check out [the Contribution Guide](https://github.com/atuttle/cf-semver/blob/master/contributing.md#contribution-guide).
+
+## Contributors
+
+* [Adam Tuttle](http://github.com/atuttle/)
 
 ## License
 
