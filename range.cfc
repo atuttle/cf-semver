@@ -94,8 +94,16 @@ component extends="semverrules" {
 			set[i] = parseComparator(set[i], loose);
 		}
 		//sometimes parse puts 2 comparators into 1 array item, so re-split them
-		if (arrayLen(set) == 1 && find(" ", set[1]) > 0){
-			set = listToArray(set[1], ' ');
+		for (var i = 1; i <= arrayLen(set); i++){
+			if (find(" ", set[i]) > 0){
+				var tmp = listToArray(set[i], ' ');
+				set[i] = tmp[1];
+				arrayDeleteAt(tmp, 1);
+				while(arrayLen(tmp) > 0){
+					arrayAppend(set, tmp[1]);
+					arrayDeleteAt(tmp, 1);
+				}
+			}
 		}
 // writeDump(set);
 		for (var i = arrayLen(set); i > 0; i--){
@@ -109,10 +117,14 @@ component extends="semverrules" {
 				return arrayLen(reMatch(compRe, comp)) > 0;
 			});
 		}
-writeDump(var={set=set},label='set');
+// writeDump(var={set=set},label='set');
 		for (var i = 1; i <= arrayLen(set); i++){
 			if (set[i] == '') set[i] = '*';
 			if (set[i] == '*' || lcase(set[i]) == 'x') set[i] = '>=0.0.0';
+			//if multiple comparators in one, split into separate comparators
+			// if (reFind("\s+", set[i], 1, false) > 1){
+
+			// }
 			set[i] = new comparator(set[i], loose);
 		}
 
