@@ -14,7 +14,7 @@ component extends="semverrules" {
 	 *****************************************************************************************************************/
 
 	//ported from function SemVer()
-	this.init = function(version, loose = false){
+	function init(version, loose = false){
 		if (isInstanceOf(arguments.version, "semver")){
 			if (arguments.version.loose == arguments.loose){
 				return arguments.version;
@@ -22,72 +22,70 @@ component extends="semverrules" {
 				arguments.version = arguments.version.version;
 			}
 		}
-
 		this.loose = arguments.loose;
-		var r = this.loose ? this.src[this.LOOSE] : this.src[this.FULL];
-		var m = reMatch(r, trim(arguments.version));
-		if (!arrayLen(m)){
-			throw "Invalid version `#arguments.version#`";
+		if (len(arguments.version)){
+			var r = this.loose ? this.src[variables.LOOSE] : this.src[variables.FULL];
+			var m = reMatch(r, trim(arguments.version));
+			if (!arrayLen(m)){
+				throw "Invalid version `#arguments.version#`";
+			}
+		}else{
+			arguments.version = '*';
+			var m = ['*','*','*'];
 		}
 
 		this.raw = arguments.version;
 
 		//these are actually numbers
-		// m = listToArray(m[1], '.-');
+		if (find(".", m[1]) > 0){
+			m = listToArray(m[1], '.');
+		}
 		this.major = val(m[1]);
 		this.minor = val(m[2]);
-		this.patch = val(m[3]);
+		this.patch = val(listFirst(m[3], '-'));
+		this.prerelease = listToArray(listFirst(listRest(m[3], '-'), '+'), '.'); //pre comes between a hyphen and a plus
+		this.build = listToArray(listRest(m[3], '+'), '.'); //build comes after a hyphen and can be dot-delimited
 
-		// numberify any prerelease numeric ids
-		if (arrayLen(m) < 4){
-			this.prerelease = [];
-		}else{
-			this.prerelease = listToArray(m[4], '.');
-			for(var i = 1; i <= arrayLen(this.prerelease); i++){
-				this.prerelease[i] = (isNumeric(this.prerelease[i]) ? val(this.prerelease[i]) : this.prerelease[i]);
-			}
-		}
-
-		this.build = (arrayLen(m) >=5) ? listToArray(m[5], '.') : [];
 		format();
+// writeDump(var={v=this.version},label='semver constructor');
 
 // writeDump(var=this.src[this.HYPHENRANGE],abort=true);
 
 		return this;
-	};
+	}
 
-	this.Parse = function(version, loose = false){
+	function parse(version, loose = false){
 		var r = loose ? src[LOOSE] : src[FULL];
 		return (reFind(r, version) > 0) ? new semver(version, loose) : '';
-	};
+	}
 
-	this.valid = function(version, loose = false){
+	function valid(version, loose = false){
 		var v = this.parse(version, loose);
 		return (v != '') ? v.version : v;
-	};
+	}
 
-	this.clean = function(version, loose = false){
+	function clean(version, loose = false){
 		//implementation is just a copy of valid, so reuse it
 		return this.valid(version, loose);
-	};
+	}
 
-	this.inspect = function(){
+	function inspect(){
 		return '<SemVer "' & this.version & '">';
-	};
+	}
 
-	this.toString = function(){
+	function toString(){
 		return this.version;
-	};
+	}
 
-	this.compare = function(other){
+	function compare(other){
 		if (!isInstanceOf(arguments.other, "semver")){
 			arguments.other = new semver(arguments.other, this.loose);
 		}
 
 		return this.compareMain(other) || this.comparePre(other);
-	};
+	}
 
-	this.compareMain = function(other){
+	function compareMain(other){
 		if (!isInstanceOf(arguments.other, "semver")){
 			arguments.other = new semver(arguments.other, this.loose);
 		}
@@ -95,9 +93,9 @@ component extends="semverrules" {
 		return this.compareIdentifiers(this.major, other.major) ||
 		       this.compareIdentifiers(this.minor, other.minor) ||
 		       this.compareIdentifiers(this.patch, other.patch);
-	};
+	}
 
-	this.comparePre = function(other){
+	function comparePre(other){
 		if (!isInstanceOf(arguments.other, "semver")){
 			arguments.other = new semver(arguments.other, this.loose);
 		}
@@ -125,7 +123,7 @@ component extends="semverrules" {
 				}
 			}
 		} while(true);
-	};
+	}
 
 	//replaces the class method "inc"
 	private function incSemver(version, release, loose = false){
@@ -137,7 +135,7 @@ component extends="semverrules" {
 	}
 
 	//port of the instance method
-	this.inc = function(version, release, loose = false){
+	function inc(version, release, loose = false){
 
 
 		/*
@@ -188,7 +186,7 @@ component extends="semverrules" {
 		return this;
 	};
 
-	this.compareIdentifiers = function(a, b){
+	function compareIdentifiers(a, b){
 		var anum = isNumeric(a);
 		var bnum = isNumeric(b);
 
@@ -199,30 +197,30 @@ component extends="semverrules" {
 		                          0;
 	};
 
-	this.rcompareIdentifiers = function(a, b){
+	function rcompareIdentifiers(a, b){
 		return compareIdentifiers(b, a);
 	};
 
-	this.compareSemvers = function(a, b, loose = false){
+	function compareSemvers(a, b, loose = false){
 		return new semver(a, loose).compare(b);
 	};
 
-	this.compareLoose = function(a, b){
+	function compareLoose(a, b){
 		return compareSemvers(a, b, true);
 	};
 
-	this.rcompare = function(a, b, loose = false){
+	function rcompare(a, b, loose = false){
 		return compareSemvers(b, a, loose);
 	};
 
-	this.sort = function(list, loose = false){
+	function sort(list, loose = false){
 		var sorter = function(a, b){
 			return this.compareSemvers(a, b, loose);
 		};
 		arraySort(list, sorter);
 	};
 
-	this.rsort = function(list, loose = false){
+	function rsort(list, loose = false){
 		var sorter = function(a, b){
 			return rcompare(a, b, loose);
 		};
@@ -252,7 +250,7 @@ component extends="semverrules" {
 		return this.compareSemvers(a, b, loose) <= 0;
 	};
 
-	this.cmp = function(a, op, b, loose = false){
+	function cmp(a, op, b, loose = false){
 		var ret = '';
 		switch(op){
 			case '===': ret = this.eq(a, b); break;
@@ -268,19 +266,7 @@ component extends="semverrules" {
 		return ret;
 	};
 
-	this.satisfies = function(){ return false; };
-
-	this.replaceStars = function(){ return false; };
-
-	this.toComparators = function(){ return false; };
-
-	this.maxSatisfying = function(){ return false; };
-
-	/*
-	 * PRIVATE METHODS
-	 */
-
-	variables.format = function(){
+	function format(){
 		this.version = "#this.major#.#this.minor#.#this.patch#";
 		if (arrayLen(this.prerelease)){
 			this.version &= '-' & arrayToList(this.prerelease, '.');

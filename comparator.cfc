@@ -14,7 +14,7 @@ component extends="semverrules" {
 	 *****************************************************************************************************************/
 
 	//ported from constructor function Comparator()
-	this.init = function(comp, loose = false){
+	function init(comp, loose = false){
 		if (isInstanceOf(comp, "comparator")){
 			if (comp.loose == arguments.loose){
 				return comp;
@@ -26,20 +26,21 @@ component extends="semverrules" {
 		this.loose = arguments.loose;
 		this.parse(comp);
 
-		if (this.semver == variables.ANY){
+		if (isStruct(this.semver) && structIsEmpty(this.semver)){
 			this.value = '';
 		}else{
-			this.value = this.operator + this.semver.version;
+			this.value = this.operator & this.semver.version;
 		}
 
 		return this;
 	};
 
-	this.parse = function(comp){
-		var r = this.loose ? re[COMPARATORLOOSE] : re[COMPARATOR];
+	function parse(comp){
+		var r = this.loose ? this.src[COMPARATORLOOSE] : this.src[COMPARATOR];
 		var tmp = comp;
 		var m = reMatch(r, comp);
 
+// writeDump(var=local,label='comparator parse');
 		if (!arrayLen(m)){
 			throw 'Invalid comparator: `#comp#`';
 		}
@@ -51,12 +52,14 @@ component extends="semverrules" {
 				tmp = replace(tmp, op, "");
 			}
 		});
-		m = listToArray(m, '.-');
+		m = listToArray(tmp, '.-');
+// writeDump(var=local,label='comparator parse');
 		// if it literally is just '>' or '' then allow anything.
 		if (arrayLen(m) <= 1){
 			this.semver = ANY;
 		}else{
 			this.semver = new semver(tmp, this.loose);
+// writeDump(var={semver=this.semver, comparator_loose=this.loose},label='comparator semver');
 
 			// <1.2.3-rc DOES allow 1.2.3-beta (has prerelease)
 			// >=1.2.3 DOES NOT allow 1.2.3-beta
@@ -66,22 +69,22 @@ component extends="semverrules" {
 			// The assumption is that the 1.2.3 version has something you
 			// *don't* want, so we push the prerelease down to the minimum.
 			if (this.operator == '<' && !arrayLen(this.semver.prerelease)) {
-				this.semver.prerelease = ['0'];
+				this.semver.prerelease = [0];
 				this.semver.format();
 			}
 		}
 	};
 
-	this.inspect = function(){
+	function inspect(){
 		return '<SemVer Comparator "' & this.value & '">';
 	};
 
-	this.toString = function(){
+	function toString(){
 		return this.value;
 	};
 
-	this.test = function(version){
-		return (this.semver == variables.ANY) ? true :
+	function test(version){
+		return (isStruct(this.semver) && structIsEmpty(this.semver)) ? true : //if empty struct, that's the "any" flag
 		       createObject("component","semver").cmp(arguments.version, this.operator, this.semver, this.loose);
 	};
 

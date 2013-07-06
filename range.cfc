@@ -19,19 +19,25 @@ component extends="semverrules" {
 			return range;
 		}
 
+// todo: support instantiation with no args
+// 		if (arrayLen(arguments) == 0){
+// 			this.loose = false;
+// 			this.raw = '*';
+// 			this.set = [ parseRange('*') ];
+// 		}
+
 		this.loose = arguments.loose;
+
+		//empty string = *
+		if (arguments.range == '') arguments.range = '>=*';
 
 		// First, split based on boolean or ||
 		this.raw = range;
-		range = replace(range, ' || ', chr(11), 'ALL');
-		this.set = listToArray(range, chr(11));
+		range = replace(range, '||', chr(11), 'ALL');
+		this.set = listToArray(range, chr(11), true);
 		for (var i = 1; i <= arrayLen(this.set); i++){
-			this.set[i] = this.parseRange(trim(this.set[i]));
-		}
-		for (var i = arrayLen(this.set); i > 0; i--){
-			if (len(trim(this.set[i])) == 0){
-				arrayDeleteAt(this.set, i);
-			}
+			if (!len(this.set[i])) this.set[i] = '*';
+			this.set[i] = parseRange(trim(this.set[i]));
 		}
 
 		if (!arrayLen(this.set)) {
@@ -48,11 +54,15 @@ component extends="semverrules" {
 	};
 
 	this.format = function() {
-		var tmp = [];
+		var retSet = [];
 		arrayEach(this.set, function(comps){
-			arrayAppend(tmp, trim(arrayToList(comps, ' ')));
+			var tmp = [];
+			arrayEach(comps, function(c){
+				arrayAppend(tmp, c.value);
+			});
+			arrayAppend(retSet, arrayToList(tmp, ' '));
 		});
-		this.range = trim(arrayToList(tmp, '||'));
+		this.range = trim(arrayToList(retSet, '||'));
 		return this.range;
 	};
 
@@ -60,33 +70,34 @@ component extends="semverrules" {
 		return this.range;
 	};
 
-	/*
-	 * PRIVATE METHODS
-	 */
-
-	remote function parseRange(range) {
-		var loose = true;//this.loose;
+	function parseRange(range) {
+		var loose = this.loose;
 		range = trim(range);
 
+// writeDump(arguments);
 		// `1.2.3 - 1.2.4` => `>=1.2.3 <=1.2.4`
-		var hr = loose ? this.src[.HYPHENRANGELOOSE] : this.src[.HYPHENRANGE];
+		var hr = loose ? this.src[HYPHENRANGELOOSE] : this.src[HYPHENRANGE];
 		range = slipstream(range, hr, "hyphenReplace");
-
+// writeDump(range);
 		// `> 1.2.3 < 1.2.5` => `>1.2.3 <1.2.5`
+		range = reReplace(range, "\s+", " ", "ALL");
 		range = replaceList(range, "> ,< ,>= ,<= ,~ ", ">,<,>=,<=,~");
-
-		// normalize spaces
-		range = arrayToList(listToArray(range, ' '), ' ');
-		// writeDump(var=range,abort=true);
+// writeDump(range);
 
 		// At this point, the range is completely trimmed and
 		// ready to be split into comparators.
-
-		var compRe = loose ? this.src[.COMPARATORLOOSE] : this.src[.COMPARATOR];
 		var set = listToArray(range, ' ');
+
+// writeDump(set);
+		var compRe = loose ? this.src[COMPARATORLOOSE] : this.src[COMPARATOR];
 		for (var i = 1; i <= arrayLen(set); i++){
-			set[i] = parseComparator(comp, loose);
+			set[i] = parseComparator(set[i], loose);
 		}
+		//sometimes parse puts 2 comparators into 1 array item, so re-split them
+		if (arrayLen(set) == 1 && find(" ", set[1]) > 0){
+			set = listToArray(set[1], ' ');
+		}
+// writeDump(set);
 		for (var i = arrayLen(set); i > 0; i--){
 			if (!len(trim(set[i]))){
 				arrayDeleteAt(set, i);
@@ -94,13 +105,16 @@ component extends="semverrules" {
 		}
 		if (this.loose) {
 			// in loose mode, throw out any that are not valid comparators
-			set = set.filter(function(comp) {
-				return !!comp.match(compRe);
+			arrayFilter(set, function(comp){
+				return arrayLen(reMatch(compRe, comp)) > 0;
 			});
 		}
-		set = set.map(function(comp) {
-			return new Comparator(comp, loose);
-		});
+writeDump(var={set=set},label='set');
+		for (var i = 1; i <= arrayLen(set); i++){
+			if (set[i] == '') set[i] = '*';
+			if (set[i] == '*' || lcase(set[i]) == 'x') set[i] = '>=0.0.0';
+			set[i] = new comparator(set[i], loose);
+		}
 
 		return set;
 	};
@@ -108,13 +122,17 @@ component extends="semverrules" {
 	//intentionally omitting "toComparators" method; suspect we won't need it (was included for legacy reasons in Node)
 
 	private function isX(id){
-		return (id == '*' || lcase(id) == 'x');
+		return (len(id) == 0 || id == '*' || lcase(id) == 'x');
 	}
 
 	private function parseComparator(comp, loose = false){
+// writeDump(var=arguments,label='parseComparator args');
 		arguments.comp = replaceTildes(arguments.comp, arguments.loose);
+// writeDump(var=arguments,label='after tildes');
 		arguments.comp = replaceXRanges(arguments.comp, arguments.loose);
+// writeDump(var=arguments,label='after xRanges');
 		arguments.comp = replaceStars(arguments.comp, arguments.loose);
+// writeDump(var=arguments,label='after stars');
 		return arguments.comp;
 	}
 
@@ -125,6 +143,7 @@ component extends="semverrules" {
 	// ~1.2.3, ~>1.2.3 --> >=1.2.3 <1.3.0
 	// ~1.2.0, ~>1.2.0 --> >=1.2.0 <1.3.0
 	private function replaceTildes(comp, loose = false) {
+		if (find("~", comp) == 0) return comp;
 		var result = listToArray(trim(comp), ' ');
 		for (var i = 1; i <= arrayLen(result); i++){
 			result[i] = replaceTilde(result[i]);
@@ -134,23 +153,24 @@ component extends="semverrules" {
 
 	private function replaceTilde(comp, loose = false) {
 		var r = (loose ? this.src[TILDELOOSE] : this.src[TILDE]);
-		var cleaner = function(_, Major, minor, patch, pre) {
-			var ret = '';
-			if (isX(Major))      ret = '';
-			else if (isX(minor)) ret = '>=' & Major & '.0.0-0 <' & (val(Major) + 1) & '.0.0-0';
-			else if (isX(patch)) ret = '>=' & Major & '.' & minor & '.0-0 <' & Major & '.' & (val(minor) + 1) & '.0-0'; // ~1.2 == >=1.2.0- <1.3.0-
-			else if (pre != '') {
-				if (left(pre, 1) != '-'){
-					pre = '-' & pre;
-					ret = '>=' & Major & '.' & minor & '.' & patch & pre & ' <' & Major & '.' & (val(minor) + 1) & '.0-0';
-				} else {
-					// ~1.2.3 == >=1.2.3-0 <1.3.0-0
-					ret = '>=' & Major & '.' & minor & '.' & patch & '-0' & ' <' & Major & '.' & (val(minor) + 1) & '.0-0';
-				}
+		return slipstream(comp, r, "tildeCleaner");
+	}
+	private function tildeCleaner(ret = '', Major = '', minor = '', patch = '', pre = '', preNoHyphen = '') {
+// writeDump(var=arguments,label='tildeCleaner args');
+		if (isX(Major))      {ret = '';}
+		else if (isX(minor)) {ret = '>=' & Major & '.0.0-0 <' & (val(Major) + 1) & '.0.0-0';}
+		else if (isX(patch)) {ret = '>=' & Major & '.' & minor & '.0-0 <' & Major & '.' & (val(minor) + 1) & '.0-0';} // ~1.2 == >=1.2.0- <1.3.0-
+		else if (pre != '') {
+			if (left(pre, 1) != '-'){
+				pre = '-' & pre;
 			}
-			return ret;
-		};
-		return slipstream(comp, r, cleaner);
+			// ~1.2.3 == >=1.2.3-0 <1.3.0-0
+			ret = '>=' & Major & '.' & minor & '.' & patch & pre & ' <' & Major & '.' & (val(minor) + 1) & '.0-0';
+		}else{
+			ret = '>=' & Major & '.' & minor & '.' & patch & '-0' & ' <' & Major & '.' & (val(minor) + 1) & '.0-0';
+		}
+// writeDump(var=local,label='tildeCleaner end');
+		return ret;
 	}
 
 	private function replaceXRanges(comp, loose = false) {
@@ -163,61 +183,74 @@ component extends="semverrules" {
 
 	private function replaceXRange(comp, loose = false) {
 		arguments.comp = trim(arguments.comp);
-		var r = loose ? src[XRANGELOOSE] : src[XRANGE];
-		var cleaner = function(ret, gtlt, Major, minor, patch, pre) {
-			var xMajor = isX(Major);
-			var xMinor = xMajor || isX(minor);
-			var xPatch = xMinor || isX(patch);
-			var anyX = xPatch;
+		var r = loose ? this.src[XRANGELOOSE] : this.src[XRANGE];
+		return slipstream(comp, r, "xRangeCleaner");
+	}
+	private function xRangeCleaner(ret = '', gtlt = '', Major = '', minor = '', patch = '', pre = '') {
+		var chunks = listToArray(replaceList(ret, '<,>,=,~', ',,,'), '.'); // <2 => 2
+		var numChunks = arrayLen(chunks);
+		if (numChunks == 1) {
+			Major = (isNumeric(chunks[1]) ? val(chunks[1]) : 'x');
+			minor = 'x';
+		}
+		if (numChunks == 2) {
+			Major = (isNumeric(chunks[1]) ? val(chunks[1]) : 'x');
+			minor = (isNumeric(chunks[2]) ? val(chunks[2]) : 'x');
+			patch = 'x';
+		}
+// writeDump(var=local,label='xRangeCleaner args');
 
-			if (gtlt == '=' && anyX) gtlt = '';
+		var xMajor = isX(Major);
+		var xMinor = xMajor || isX(minor);
+		var xPatch = xMinor || isX(patch);
+		var anyX = xPatch;
 
-			if (len(gtlt) && anyX) {
-				// replace X with 0, and then append the -0 min-prerelease
-				if (xMajor) Major = 0;
-				if (xMinor) minor = 0;
-				if (xPatch) patch = 0;
+		if (gtlt == '=' && anyX) gtlt = '';
 
-				if (gtlt == '>') {
-					// >1 => >=2.0.0-0
-					// >1.2 => >=1.3.0-0
-					// >1.2.3 => >= 1.2.4-0
-					gtlt = '>=';
-					if (xMajor) {
-						// no change
-					} else if (xMinor) {
-						Major = val(Major) + 1;
-						minor = 0;
-						patch = 0;
-					} else if (xPatch) {
-						minor = val(minor) + 1;
-						patch = 0;
-					}
+		if (len(gtlt) && anyX) {
+			// replace X with 0, and then append the -0 min-prerelease
+			if (xMajor) Major = 0;
+			if (xMinor) minor = 0;
+			if (xPatch) patch = 0;
+
+			if (gtlt == '>') {
+				// >1 => >=2.0.0-0
+				// >1.2 => >=1.3.0-0
+				// >1.2.3 => >= 1.2.4-0
+				gtlt = '>=';
+				if (xMajor) {
+					// no change
+				} else if (xMinor) {
+					Major = val(Major) + 1;
+					minor = 0;
+					patch = 0;
+				} else if (xPatch) {
+					minor = val(minor) + 1;
+					patch = 0;
 				}
-
-				ret = gtlt & Major & '.' & minor & '.' & patch & '-0';
-			} else if (xMajor) {
-				// allow any
-				ret = '*';
-			} else if (xMinor) {
-				// append '-0' onto the version, otherwise
-				// '1.x.x' matches '2.0.0-beta', since the tag
-				// *lowers* the version value
-				ret = '>=' & Major & '.0.0-0 <' & (val(Major) + 1) & '.0.0-0';
-			} else if (xPatch) {
-				ret = '>=' & Major & '.' & minor & '.0-0 <' & Major & '.' & (val(minor) + 1) & '.0-0';
 			}
 
-			return ret;
-		};
-		return slipstream(comp, r, cleaner);
+			ret = gtlt & Major & '.' & minor & '.' & patch & '-0';
+		} else if (xMajor) {
+			// allow any
+			ret = '*';
+		} else if (xMinor) {
+			// append '-0' onto the version, otherwise
+			// '1.x.x' matches '2.0.0-beta', since the tag
+			// *lowers* the version value
+			ret = '>=' & Major & '.0.0-0 <' & (val(Major) + 1) & '.0.0-0';
+		} else if (xPatch) {
+			ret = '>=' & Major & '.' & minor & '.0-0 <' & Major & '.' & (val(minor) + 1) & '.0-0';
+		}
+
+		return ret;
 	}
 
 	// Because * is AND-ed with everything else in the comparator,
 	// and '' means "any version", just remove the *s entirely.
 	private function replaceStars(comp, loose = false) {
 		// Looseness is ignored here.  star is always as loose as it gets!
-		return reReplace(trim(comp), re[STAR], '', 'ALL');
+		return reReplace(trim(comp), this.src[STAR], '', 'ALL');
 	}
 
 	// This function is passed to string.replace(re[HYPHENRANGE])
@@ -225,7 +258,14 @@ component extends="semverrules" {
 	// 1.2 - 3.4.5 => >=1.2.0-0 <=3.4.5
 	// 1.2.3 - 3.4 => >=1.2.0-0 <3.5.0-0 Any 3.4.x will do
 	// 1.2 - 3.4 => >=1.2.0-0 <3.5.0-0
-	private function hyphenReplace(from, fMaj, fMin, fp, fpr, fb, to, tMaj, tMin, tp, tpr, tb) {
+	private function hyphenReplace(junk = '', from = '', fMaj = '', fMin = '', fp = '', fpr = '', fb = '', to = '', tMaj = '', tMin = '', tp = '', tpr = '', tb = '') {
+		//"junk" argument is a symptom of differing regex approaches in original nodejs module;
+		// sometimes the whole pattern is captured, sometimes not (this one is a yes).
+		// we've opted to always prepend the original string as the first argument (see implementation of slipstream function)
+		// so sometimes (like now) we need to ignore it.
+// writeDump(var=arguments,label='hyphenReplace args');
+		if (find(" - ", junk) == 0) return junk;
+
 		if (isX(fMaj))                from = '';
 		else if (isX(fMin))           from = '>=' & fMaj & '.0.0-0';
 		else if (isX(fp) || !len(fp)) from = '>=' & fMaj & '.' & fMin & '.0-0';
@@ -241,45 +281,43 @@ component extends="semverrules" {
 	}
 
 	// if ANY of the sets match ALL of its comparators, then pass
-	this.test = function(version) {
-		if (!len(version)) return false;
-		for (var i = 0; i < this.set.length; i++) {
-			if (testSet(this.set[i], version))
-			return true;
+	function test(version) {
+		for (var i = 1; i <= arrayLen(this.set); i++) {
+			if (testSet(this.set[i], version)) return true;
 		}
 		return false;
 	};
 
-	private function testSet(set, version){
-		for (var i = 0; i < arrayLen(arguments.set); i++) {
-//todo: what exactly is this testing?
-			if (!set[i].test(version)) return false;
+	private function testSet(comparators, version){
+		for (var i = 1; i <= arrayLen(arguments.comparators); i++) {
+			if (!arguments.comparators[i].test(version)) return false;
 		}
 		return true;
 	}
 
-	this.satisfies = function(version, range, loose = false) {
+	function satisfies(version, range, loose = false) {
 		try {
 			range = new Range(range, loose);
 		} catch (any er) {
+// writeDump(var=er);
 			return false;
 		}
 		return range.test(version);
-	}
+	};
 
-	this.maxSatisfying = function(versions, range, loose = false) {
+	function maxSatisfying(versions, range, loose = false) {
 		//versions is an array of version strings
 		var matches = arrayFilter(versions, function(v){ return satisfies(v, range, loose); });
 		var sortedMatches = arraySort(matches, 'text', 'desc');
 		return (arrayLen(sortedMatches) > 0 ? sortedMatches[1] : '');
-	}
+	};
 
 	private function validRange(range, loose = false) {
 		try {
 			// Return '*' instead of '' so that truthiness works.
 			// This will throw if it's invalid anyway
 			return new Range(range, loose).range;
-		} catch (er) {
+		} catch (any er) {
 			return '';
 		}
 	}
@@ -291,7 +329,9 @@ component extends="semverrules" {
 
 	//this function (and reFindNoSuck) emulate the behavior of JavaScript's string.replace(pattern, fn) behavior
 	private function slipstream(str, pattern, callback){
+// writeDump(var=arguments,label='slipstream arguments');
 		var matches = reFindNoSuck(pattern, str);
+		arrayPrepend(matches, str);//include the original string as the first argument
 		return invoke("", callback, matches);//call the callback and pass it the matches
 	}
 

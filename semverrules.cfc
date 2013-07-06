@@ -13,7 +13,7 @@ component {
 	this.SEMVER_SPEC_VERSION = "2.0.0";
 
 	//regexes
-	this.re = [];
+	this.reFlags = {};
 	this.src = [];
 	variables.R = 1;
 	variables.ANY = {};
@@ -23,6 +23,10 @@ component {
 
 	// ## Numeric Identifier
 	// A single `0`, or a non-zero digit followed by zero or more digits.
+
+	/*
+		REGEXES LAST UPDATED: 2012-07-05
+	 */
 
 	NUMERICIDENTIFIER = R++;
 	this.src[NUMERICIDENTIFIER] = '0|[1-9]\d*';
@@ -149,9 +153,9 @@ component {
 	// >=2.x, for example, means >=2.0.0-0
 	// <1.x would be the same as "<1.0.0-0", though.
 	XRANGE = R++;
-	this.src[XRANGE] = '^' & this.src[GTLT] & '\s*' & this.src[XRANGEPLAIN] & '$';
+	this.src[XRANGE] = '^(' & this.src[GTLT] & '\s*' & this.src[XRANGEPLAIN] & ')$';
 	XRANGELOOSE = R++;
-	this.src[XRANGELOOSE] = '^' & this.src[GTLT] & '\s*' & this.src[XRANGEPLAINLOOSE] & '$';
+	this.src[XRANGELOOSE] = '^(' & this.src[GTLT] & '\s*' & this.src[XRANGEPLAINLOOSE] & ')$';
 
 	// Tilde ranges.
 	// Meaning is "reasonably at or greater than"
@@ -183,7 +187,7 @@ component {
 
 	// this one has to use the /g flag
 	//TODO: not sure CF supports flags on regexes; not sure what the consequences of this are...
-	this.re[COMPARATORTRIM] = 'g';
+	this.reFlags[COMPARATORTRIM] = 'g';
 
 
 	// Something like `1.2.3 - 1.2.4`
