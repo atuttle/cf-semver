@@ -14,7 +14,7 @@ component extends="semverrules" {
 	 *****************************************************************************************************************/
 
 	//ported from function Range()
-	this.init = function(range, loose = false){
+	function init(range, loose = false){
 		if (isInstanceOf(range, "range") && range.loose == arguments.loose){
 			return range;
 		}
@@ -30,16 +30,18 @@ component extends="semverrules" {
 
 		//empty string = *
 		if (arguments.range == '') arguments.range = '>=*';
+		if (arguments.range == '*') arguments.range = '>=*';
+// writeDump(var=local,label='range init args');
 
 		// First, split based on boolean or ||
 		this.raw = range;
 		range = replace(range, '||', chr(11), 'ALL');
 		this.set = listToArray(range, chr(11), true);
+// writeDump(var=this.set,label='range init');
 		for (var i = 1; i <= arrayLen(this.set); i++){
-			if (!len(this.set[i])) this.set[i] = '*';
+			if (!len(this.set[i])) this.set[i] = '>=*';
 			this.set[i] = parseRange(trim(this.set[i]));
 		}
-
 		if (!arrayLen(this.set)) {
 			throw 'Invalid SemVer Range: `#range#`';
 		}
@@ -82,7 +84,7 @@ component extends="semverrules" {
 		// `> 1.2.3 < 1.2.5` => `>1.2.3 <1.2.5`
 		range = reReplace(range, "\s+", " ", "ALL");
 		range = replaceList(range, "> ,< ,>= ,<= ,~ ", ">,<,>=,<=,~");
-// writeDump(range);
+// writeDump(var={r=range},label='parseRange');
 
 		// At this point, the range is completely trimmed and
 		// ready to be split into comparators.
@@ -92,6 +94,7 @@ component extends="semverrules" {
 		var compRe = loose ? this.src[COMPARATORLOOSE] : this.src[COMPARATOR];
 		for (var i = 1; i <= arrayLen(set); i++){
 			set[i] = parseComparator(set[i], loose);
+			if (set[i] == '') set[i] = '>=0.0.0-0';
 		}
 		//sometimes parse puts 2 comparators into 1 array item, so re-split them
 		for (var i = 1; i <= arrayLen(set); i++){
@@ -105,7 +108,7 @@ component extends="semverrules" {
 				}
 			}
 		}
-// writeDump(set);
+// writeDump(var={set=set},label='post parseComparator');
 		for (var i = arrayLen(set); i > 0; i--){
 			if (!len(trim(set[i]))){
 				arrayDeleteAt(set, i);
@@ -199,7 +202,11 @@ component extends="semverrules" {
 		return slipstream(comp, r, "xRangeCleaner");
 	}
 	private function xRangeCleaner(ret = '', gtlt = '', Major = '', minor = '', patch = '', pre = '') {
-		var chunks = listToArray(replaceList(ret, '<,>,=,~', ',,,'), '.'); // <2 => 2
+// writeDump(var=local,label='xRangeCleaner args');
+		var clean = replaceList(ret, '<,>,=,~,', ',,,');
+		var clean2 = replaceList(clean, '.,+,x,X,*', ',,,,');
+		if (len(clean2) && !isNumeric(listFirst(clean2, '-'))){ throw "Invalid Range `#ret#`"; }
+		var chunks = listToArray(clean, '.'); // <2 => 2
 		var numChunks = arrayLen(chunks);
 		if (numChunks == 1) {
 			Major = (isNumeric(chunks[1]) ? val(chunks[1]) : 'x');
@@ -301,6 +308,7 @@ component extends="semverrules" {
 	};
 
 	private function testSet(comparators, version){
+		if (arrayLen(arguments.comparators) == 0) return false;
 		for (var i = 1; i <= arrayLen(arguments.comparators); i++) {
 			if (!arguments.comparators[i].test(version)) return false;
 		}
