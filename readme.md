@@ -2,14 +2,9 @@
 
 Semantic Version parsing, management, etc for CFML. It conforms to the [SemVer 2.0.0 specification](http://semver.org/spec/v2.0.0.html).
 
-## Contribution Guide
+## Contributors
 
-This module should be capable of one thing, and one thing only: Parsing, validating, and testing SemVer's and SemVer ranges.
-
-### To-Do list:
-
-1. **Pass existing unit tests.** The code and unit tests have been ported to CFML but have not yet been completely shored up.
-2. **Write Documentation.** Need to document every public method and their intended uses.
+Want to help out? Found a bug? Great! Check out [the Contribution Guide](https://github.com/atuttle/cf-semver/blob/master/contributing.md#contribution-guide).
 
 ## License
 
