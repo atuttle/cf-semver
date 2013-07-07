@@ -22,7 +22,6 @@
 		assertIsDefined("semver.parse", "Missing `parse` function");
 		assertIsDefined("semver.valid", "Missing `valid` function");
 		assertIsDefined("semver.clean", "Missing `clean` function");
-		assertIsDefined("semver.SemVer", "Missing `SemVer` function");
 		assertIsDefined("semver.inc", "Missing `inc` function");
 		assertIsDefined("semver.compareIdentifiers", "Missing `compareIdentifiers` function");
 		assertIsDefined("semver.rcompareIdentifiers", "Missing `rcompareIdentifiers` function");
@@ -38,12 +37,9 @@
 		assertIsDefined("semver.gte", "Missing `gte` function");
 		assertIsDefined("semver.lte", "Missing `lte` function");
 		assertIsDefined("semver.cmp", "Missing `cmp` function");
-		assertIsDefined("semver.Comparator", "Missing `Comparator` function");
-		assertIsDefined("semver.range", "Missing `range` function");
 		// assertIsDefined("semver.toComparators", "Missing `toComparators` function");
-		assertIsDefined("semver.satisfies", "Missing `satisfies` function");
-		assertIsDefined("semver.maxSatisfying", "Missing `maxSatisfying` function");
-		assertIsDefined("semver.validRange", "Missing `validRange` function");
+		assertIsDefined("range.satisfies", "Missing `satisfies` function");
+		assertIsDefined("range.maxSatisfying", "Missing `maxSatisfying` function");
 	}
 
 	function simple_contsructor_tests(){
