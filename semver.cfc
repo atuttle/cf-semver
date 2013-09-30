@@ -152,27 +152,27 @@ component {
 		var i = 0;
 		do {
 			i++;
-			//numeric pre
+			//equal length (zero+) pre strings that have matched up to this point & are both out of more chars
 			if (v1pre < i && v2pre < i) return 0;
+			//v1 is longer
 			else if (v2pre < i) return 1;
+			//v2 is longer
 			else if (v1pre < i) return -1;
 			//alphanumeric pre
 			else {
-				var a = v1pre_a[i];
-				var b = v2pre_a[i];
-				if (a == b){
+				var a = asc( v1pre_a[i] );
+				var b = asc( v2pre_a[i] );
+				var comparison = compareIdentifiers(a, b);
+				if (comparison == 0){
 					continue;
 				}else{
-					return compareIdentifiers(a, b);
+					return comparison;
 				}
 			}
 		} while(true);
 	}
 
 	private function compareIdentifiers(a, b){
-		var anum = isNumeric(a);
-		var bnum = isNumeric(b);
-
 		return (a < b) ? -1 :
 		       (a > b) ?  1 :
 		                  0;

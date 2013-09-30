@@ -19,7 +19,12 @@ Semantic Version parsing, management, etc for CFML. Specified by and conforms to
 
 A prerelease string (any value) is considered a lower version than the same version number with no pre string. Thus: `0.0.1` > `0.0.1-beta`.
 
-Prerelease strings are compared alphanumerically; thus: `1.0.0-alpha1` < `1.0.0-alpha2` < `1.0.0-beta` < `1.0.0`
+Prerelease/build strings are compared alphanumerically; thus:
+
+* `1.0.0-alpha1` < `1.0.0-alpha2` < `1.0.0-beta` < `1.0.0`
+* `v1.1.1-aaa` > `v1.1.1-aa` (longer string is greater if common characters are equal)
+* `v1.1.1-aaa` < `v1.1.1-aba` (`b` > `a`)
+* `2.0.0-10` < `2.0.0-5` (`1` < `5`)
 
 ### Prefixes
 
