@@ -94,6 +94,39 @@
 		);
 	}
 
+	function compare_tests(){
+		arrayEach(
+			[
+				 { left: '1.0.0', right: '1.0.0', result: 0 }
+				,{ left: '2.0.0', right: '1.0.0', result: 1 }
+				,{ left: '1.0.0', right: '2.0.0', result: -1 }
+				,{ left: '1.1.0', right: '1.0.0', result: 1 }
+				,{ left: '1.0.0', right: '1.1.0', result: -1 }
+				,{ left: '1.0.1', right: '1.0.0', result: 1 }
+				,{ left: '1.0.0', right: '1.0.1', result: -1 }
+				,{ left: '1.0.0-pre', right: '1.0.0-pre', result: 0 }
+				,{ left: '1.0.0-pre', right: '1.0.0',     result: -1 }
+				,{ left: '1.0.0',     right: '1.0.0-pre', result: 1 }
+				,{ left: '1.0.0-a',   right: '1.0.0-b',   result: -1 }
+				,{ left: '1.0.0-b',   right: '1.0.0-a',   result: 1 }
+			]
+			, function(v){
+				assertEquals(v.result, semver.compare(v.left, v.right));
+			}
+		);
+	}
+
+	//maybe one day if CF gets closure support for arraySort?
+	/*
+	function arraySort_claims_are_true(){
+		var unsorted = ['9.0.0', '0.0.1', '2.3.1', '2.3.1-beta', '2.3.1-alpha'];
+		var sorted =   ['0.0.1', '2.3.1-alpha', '2.3.1-beta', '2.3.1', '9.0.0'];
+		var result = arraySort(unsorted, semver.compare);
+		debug(result);
+		assertEquals(sorted, result);
+	}
+	*/
+
 /*
 	function comparison_tests(){
 		// [version1, version2]

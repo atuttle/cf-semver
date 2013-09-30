@@ -109,55 +109,55 @@ component {
 		}
 	}
 
-
-/*
-	function inspect(){
-		return '<SemVer "' & this.version & '">';
-	}
-
 	function toString(){
 		return this.version;
 	}
 
-	function compare(other){
-		if (!isInstanceOf(arguments.other, "semver")){
-			arguments.other = new semver(arguments.other, this.loose);
+	function compare(v1, v2){
+		if (!isInstanceOf(arguments.v1, "semver")){
+			arguments.v1 = new semver(arguments.v1);
+		}
+		if (!isInstanceOf(arguments.v2, "semver")){
+			arguments.v2 = new semver(arguments.v2);
 		}
 
-		return this.compareMain(other) || this.comparePre(other);
+		var mainCompare = compareMain(arguments.v1, arguments.v2);
+		if (mainCompare != 0){
+			return mainCompare;
+		}else{
+			//version numbers match, compare pre-strings
+			return comparePre(v1, v2);
+		}
 	}
 
-	function compareMain(other){
-		if (!isInstanceOf(arguments.other, "semver")){
-			arguments.other = new semver(arguments.other, this.loose);
-		}
-
-		return this.compareIdentifiers(this.major, other.major) ||
-		       this.compareIdentifiers(this.minor, other.minor) ||
-		       this.compareIdentifiers(this.patch, other.patch);
+	private function compareMain(v1, v2){
+		return compareIdentifiers(v1.major, v2.major) ||
+		       compareIdentifiers(v1.minor, v2.minor) ||
+		       compareIdentifiers(v1.patch, v2.patch);
 	}
 
-	function comparePre(other){
-		if (!isInstanceOf(arguments.other, "semver")){
-			arguments.other = new semver(arguments.other, this.loose);
-		}
-
+	private function comparePre(v1, v2){
 		// NOT having a prerelease is > having one
-		thisPre = arrayLen(this.prerelease);
-		thatPre = arrayLen(other.prerelease);
-		if (thisPre && !thatPre) return -1;
-		else if (!thisPre && thatPre) return 1;
-		else if (!thisPre && !thatPre) return 0;
+		var v1pre_a = listToArray(v1.pre, "");
+		var v2pre_a = listToArray(v2.pre, "");
+		var v1pre = arrayLen(v1pre_a);
+		var v2pre = arrayLen(v2pre_a);
+		if (v1pre && !v2pre) return -1;
+		else if (!v1pre && v2pre) return 1;
+		else if (!v1pre && !v2pre) return compareMain(v1, v2);
 
+		//if they both have pre's, compare the pre
 		var i = 0;
 		do {
 			i++;
-			if (thisPre < i && thatPre < i) return 0;
-			else if (thatPre < i) return 1;
-			else if (thisPre < i) return -1;
+			//numeric pre
+			if (v1pre < i && v2pre < i) return 0;
+			else if (v2pre < i) return 1;
+			else if (v1pre < i) return -1;
+			//alphanumeric pre
 			else {
-				var a = this.prerelease[i];
-				var b = other.prerelease[i];
+				var a = v1pre_a[i];
+				var b = v2pre_a[i];
 				if (a == b){
 					continue;
 				}else{
@@ -165,6 +165,21 @@ component {
 				}
 			}
 		} while(true);
+	}
+
+	private function compareIdentifiers(a, b){
+		var anum = isNumeric(a);
+		var bnum = isNumeric(b);
+
+		return (a < b) ? -1 :
+		       (a > b) ?  1 :
+		                  0;
+	}
+
+
+/*
+	function inspect(){
+		return '<SemVer "' & this.version & '">';
 	}
 
 	//replaces the class method "inc"
@@ -226,17 +241,6 @@ component {
 		}
 		this.format();
 		return this;
-	};
-
-	function compareIdentifiers(a, b){
-		var anum = isNumeric(a);
-		var bnum = isNumeric(b);
-
-		return (anum && !bnum) ? -1 :
-		       (bnum && !anum) ?  1 :
-		       (a < b)         ? -1 :
-		       (a > b)         ?  1 :
-		                          0;
 	};
 
 	function rcompareIdentifiers(a, b){
