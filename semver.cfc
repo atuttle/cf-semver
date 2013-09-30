@@ -134,6 +134,10 @@ component {
 		}
 	}
 
+	function rcompare(v1, v2){
+		return compare(v2, v1);
+	}
+
 	private function compareMain(v1, v2){
 		return compareIdentifiers(v1.major, v2.major) ||
 		       compareIdentifiers(v1.minor, v2.minor) ||
