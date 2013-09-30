@@ -7,7 +7,6 @@ component {
 
 	this.semver_spec_version = '2.0.0';
 
-	this.loose = false;
 	this.major = 0;
 	this.minor = 0;
 	this.patch = 0;
@@ -138,13 +137,13 @@ component {
 		return compare(v2, v1);
 	}
 
-	private function compareMain(v1, v2){
+	function compareMain(v1, v2){
 		return compareIdentifiers(v1.major, v2.major) ||
 		       compareIdentifiers(v1.minor, v2.minor) ||
 		       compareIdentifiers(v1.patch, v2.patch);
 	}
 
-	private function comparePre(v1, v2){
+	function comparePre(v1, v2){
 		// NOT having a prerelease is > having one
 		var v1pre_a = listToArray(v1.pre, "");
 		var v2pre_a = listToArray(v2.pre, "");
@@ -212,36 +211,82 @@ component {
 		return this;
 	}
 
+	/*
+		Pass 1 argument to compare this > arg
+		Pass 2 arguments to compare left > right
+	*/
+	this.gt = function(a, b = '**null**'){
+		if (isSimpleValue(b) && b == '**null**'){
+			b = duplicate(a);
+			a = this.version;
+		}
+// writeDump(var=arguments);
+// writeDump(var=compare(arguments.a, arguments.b),abort=true);
+		return compare(a, b) > 0;
+	};
+
+	/*
+		Pass 1 argument to compare this < arg
+		Pass 2 arguments to compare left < right
+	*/
+	this.lt = function(a, b){
+		if (arrayLen(arguments) == 1){
+			b = a;
+			a = this.version;
+		}
+		return compare(a, b) < 0;
+	};
+
+	/*
+		Pass 1 argument to compare this == arg
+		Pass 2 arguments to compare left == right
+	*/
+	this.eq = function(a, b){
+		if (arrayLen(arguments) == 1){
+			b = a;
+			a = this.version;
+		}
+		return compare(a, b) == 0;
+	};
+
+	/*
+		Pass 1 argument to compare this != arg
+		Pass 2 arguments to compare left != right
+	*/
+	this.neq = function(a, b){
+		if (arrayLen(arguments) == 1){
+			b = a;
+			a = this.version;
+		}
+		return compare(a, b) != 0;
+	};
+
+	/*
+		Pass 1 argument to compare this >= arg
+		Pass 2 arguments to compare left >= right
+	*/
+	this.gte = function(a, b){
+		if (arrayLen(arguments) == 1){
+			b = a;
+			a = this.version;
+		}
+		return compare(a, b) >= 0;
+	};
+
+	/*
+		Pass 1 argument to compare this <= arg
+		Pass 2 arguments to compare left <= right
+	*/
+	this.lte = function(a, b){
+		if (arrayLen(arguments) == 1){
+			b = a;
+			a = this.version;
+		}
+		return compare(a, b) <= 0;
+	};
+
 
 /*
-	function inspect(){
-		return '<SemVer "' & this.version & '">';
-	}
-
-	this.gt = function(a, b, loose = false){
-		return this.compareSemvers(a, b, loose) > 0;
-	};
-
-	this.lt = function(a, b, loose = false){
-		return this.compareSemvers(a, b, loose) < 0;
-	};
-
-	this.eq = function(a, b, loose = false){
-		return this.compareSemvers(a, b, loose) == 0;
-	};
-
-	this.neq = function(a, b, loose = false){
-		return this.compareSemvers(a, b, loose) != 0;
-	};
-
-	this.gte = function(a, b, loose = false){
-		return this.compareSemvers(a, b, loose) >= 0;
-	};
-
-	this.lte = function(a, b, loose = false){
-		return this.compareSemvers(a, b, loose) <= 0;
-	};
-
 	function cmp(a, op, b, loose = false){
 		var ret = '';
 		switch(op){

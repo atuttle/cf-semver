@@ -130,8 +130,12 @@
 	}
 	*/
 
-/*
 	function comparison_tests(){
+var x = new semver('0.0.0');
+var y = new semver('0.0.0-pre');
+debug(semver.comparePre(x,y));
+debug(semver.compare(x,y));
+debug(semver.gt(x,y));
 		// [version1, version2]
 		// version1 should be greater than version2
 		arrayEach(
@@ -142,18 +146,18 @@
 				,['0.10.0', '0.9.0']
 				,['0.99.0', '0.10.0']
 				,['2.0.0', '1.2.3']
-				,['v0.0.0', '0.0.0-foo', true]
-				,['v0.0.1', '0.0.0', true]
-				,['v1.0.0', '0.9.9', true]
-				,['v0.10.0', '0.9.0', true]
-				,['v0.99.0', '0.10.0', true]
-				,['v2.0.0', '1.2.3', true]
-				,['0.0.0', 'v0.0.0-foo', true]
-				,['0.0.1', 'v0.0.0', true]
-				,['1.0.0', 'v0.9.9', true]
-				,['0.10.0', 'v0.9.0', true]
-				,['0.99.0', 'v0.10.0', true]
-				,['2.0.0', 'v1.2.3', true]
+				,['v0.0.0', '0.0.0-foo']
+				,['v0.0.1', '0.0.0']
+				,['v1.0.0', '0.9.9']
+				,['v0.10.0', '0.9.0']
+				,['v0.99.0', '0.10.0']
+				,['v2.0.0', '1.2.3']
+				,['0.0.0', 'v0.0.0-foo']
+				,['0.0.1', 'v0.0.0']
+				,['1.0.0', 'v0.9.9']
+				,['0.10.0', 'v0.9.0']
+				,['0.99.0', 'v0.10.0']
+				,['2.0.0', 'v1.2.3']
 				,['1.2.3', '1.2.3-asdf']
 				,['1.2.3', '1.2.3-4']
 				,['1.2.3', '1.2.3-4-foo']
@@ -169,22 +173,23 @@
 	  		,function(v){
 				var v0 = v[1];
 				var v1 = v[2];
-				var loose = (arrayLen(v) >= 3) ? v[3] : false;
-				debug('testing: v0=[#v0#], v1=[#v1#], loose=[#loose#]');
-				assertTrue(semver.gt(v0, v1, loose), "gt('#v0#', '#v1#')");
-				assertTrue(semver.lt(v1, v0, loose), "lt('#v1#', '#v0#')");
-				assertTrue(!semver.gt(v1, v0, loose), "!gt('#v1#', '#v0#')");
-				assertTrue(!semver.lt(v0, v1, loose), "!lt('#v0#', '#v1#')");
-				assertTrue(semver.eq(v0, v0, loose), "eql('#v0#', '#v0#')");
-				assertTrue(semver.eq(v1, v1, loose), "eql('#v1#', '#v1#')");
-				assertTrue(semver.neq(v0, v1, loose), "neql('#v0#', '#v1#')");
-				assertTrue(semver.cmp(v1, '==', v1, loose), "cmp('#v1#' == '#v1#')");
-				assertTrue(semver.cmp(v0, '>=', v1, loose), "cmp('#v0#' >= '#v1#')");
-				assertTrue(semver.cmp(v1, '<=', v0, loose), "cmp('#v1#' <= '#v0#')");
-				assertTrue(semver.cmp(v0, '!=', v1, loose), "cmp('#v0#' != '#v1#')");
+				debug('testing: v0=[#v0#], v1=[#v1#]');
+				assertTrue(semver.gt(v0, v1), "gt('#v0#', '#v1#')");
+				assertTrue(semver.lt(v1, v0), "lt('#v1#', '#v0#')");
+				assertTrue(!semver.gt(v1, v0), "!gt('#v1#', '#v0#')");
+				assertTrue(!semver.lt(v0, v1), "!lt('#v0#', '#v1#')");
+				assertTrue(semver.eq(v0, v0), "eq('#v0#', '#v0#')");
+				assertTrue(semver.eq(v1, v1), "eq('#v1#', '#v1#')");
+				assertTrue(semver.neq(v0, v1), "neq('#v0#', '#v1#')");
+				// assertTrue(semver.cmp(v1, '==', v1), "cmp('#v1#' == '#v1#')");
+				// assertTrue(semver.cmp(v0, '>=', v1), "cmp('#v0#' >= '#v1#')");
+				// assertTrue(semver.cmp(v1, '<=', v0), "cmp('#v1#' <= '#v0#')");
+				// assertTrue(semver.cmp(v0, '!=', v1), "cmp('#v0#' != '#v1#')");
 			}
 	  	);
 	}
+
+/*
 
 	function equality_tests(){
 		// [version1, version2]
