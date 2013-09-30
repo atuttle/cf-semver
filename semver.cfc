@@ -16,7 +16,7 @@ component {
 	this.raw = '';
 
 	function init(version){
-		//if passed another semver object, double check looseness; either return it (if same) or clone it (if different)
+		//if passed another semver object as the version string, just return that semver object
 		if (isInstanceOf(arguments.version, "semver")){
 			return arguments.version;
 		}
@@ -39,20 +39,11 @@ component {
 		return this;
 	}
 
-	function valid(version){
-		try{
-			var v = parse(version);
-			return true;
-		}catch(any e){
-			return false;
-		}
-	}
-
-	private function parse(versionString){
+	function parse(versionString){
 		var v = arguments.versionString;
-		var MAJOR = 0;
-		var MINOR = 0;
-		var PATCH = 0;
+		var MAJOR = -1;
+		var MINOR = -1;
+		var PATCH = -1;
 		var PRE = '';
 		var BUILD = '';
 
@@ -76,27 +67,46 @@ component {
 		}else{
 			throw "InvalidSemverException";
 		}
-		if (MINOR == 0){
+		if (MINOR == -1){
 			if (arrayLen(versions) > 1){
 				if (versions[2] == '*'){
 					MINOR = '*';
 					PATCH = '*';
-				}else{
+				}else if ( isNumeric(versions[2]) ){
 					MINOR = val( versions[2] );
+				}else{
+					throw "InvalidSemverException";
 				}
+			}else{
+				MINOR = 0;
+				PATCH = 0;
 			}
 		}
-		if (PATCH == 0){
+		if (PATCH == -1){
 			if (arrayLen(versions) > 2){
 				if (versions[3] == '*'){
 					PATCH = '*';
-				}else{
+				}else if ( isNumeric(versions[3]) ){
 					PATCH = val( versions[3] );
+				}else{
+					throw "InvalidSemverException";
 				}
+			}else{
+				PATCH = 0;
 			}
 		}
 		return [MAJOR, MINOR, PATCH, PRE, BUILD];
 	}
+
+	function valid(version){
+		try{
+			var v = parse(version);
+			return true;
+		}catch(any e){
+			return false;
+		}
+	}
+
 
 /*
 	function clean(version, loose = false){
