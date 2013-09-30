@@ -15,14 +15,10 @@ component {
 	this.build = '';
 	this.raw = '';
 
-	function init(version, loose = false){
+	function init(version){
 		//if passed another semver object, double check looseness; either return it (if same) or clone it (if different)
 		if (isInstanceOf(arguments.version, "semver")){
-			if (arguments.version.loose == arguments.loose){
-				return arguments.version;
-			}else{
-				arguments.version = arguments.version.version;
-			}
+			return arguments.version;
 		}
 		arguments.version = trim(arguments.version);
 		if (!len(arguments.version)){
@@ -71,12 +67,9 @@ component {
 		}
 
 		this.raw = '#this.major#.#this.minor#.#this.patch#' & (len(this.pre) ? '-#this.pre#' : '');
-
 		this.build = listRest(this.pre, '+');
 		this.pre = listFirst(this.pre, '+');
-
 		this.version = format();
-
 		return this;
 	}
 
@@ -84,17 +77,12 @@ component {
 		return '#this.major#.#this.minor#.#this.patch#' & (len(this.pre) ? '-#this.pre#' : '');
 	}
 
-/*
-	function parse(version, loose = false){
-		var r = loose ? src[LOOSE] : src[FULL];
-		return (reFind(r, version) > 0) ? new semver(version, loose) : '';
-	}
-
-	function valid(version, loose = false){
+	function valid(version){
 		var v = this.parse(version, loose);
 		return (v != '') ? v.version : v;
 	}
 
+/*
 	function clean(version, loose = false){
 		//implementation is just a copy of valid, so reuse it
 		return this.valid(version, loose);
