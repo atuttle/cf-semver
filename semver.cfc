@@ -49,11 +49,11 @@ component {
 			v = right(v, len(v)-1);
 		}
 		//save the prerelease string
-		PRE = listRest(v, '-');
+		PRE = listRest(v, '-+');
 		BUILD = listRest(PRE, '+');
 		PRE = listFirst(PRE, '+');
 		//split into major.minor.patch values
-		var blocks = listToArray(v, '-');
+		var blocks = listToArray(v, '-+');
 		var versions = listToArray(blocks[1], '.');
 		if (isNumeric(versions[1])){
 			MAJOR = val( versions[1] );
