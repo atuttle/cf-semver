@@ -1,10 +1,5 @@
 component {
 
-	/******************************************************************************************************************
-	 *	Use this odd (to CF) function declaration syntax so we can overload 1st class function names like EQ and GTE
-	 *    this.x = function( ... ){ ... }
-	 *****************************************************************************************************************/
-
 	this.semver_spec_version = '2.0.0';
 
 	this.major = 0;
@@ -211,6 +206,11 @@ component {
 		return this;
 	}
 
+	/******************************************************************************************************************
+	 *	Use this odd (to CF) function declaration syntax so we can overload 1st class function names like EQ and GTE
+	 *    this.x = function( ... ){ ... }
+	 *****************************************************************************************************************/
+
 	/*
 		Pass 1 argument to compare this > arg
 		Pass 2 arguments to compare left > right
@@ -220,30 +220,28 @@ component {
 			b = duplicate(a);
 			a = this.version;
 		}
-// writeDump(var=arguments);
-// writeDump(var=compare(arguments.a, arguments.b),abort=true);
-		return compare(a, b) > 0;
+		return this.compare(a, b) > 0;
 	};
 
 	/*
 		Pass 1 argument to compare this < arg
 		Pass 2 arguments to compare left < right
 	*/
-	this.lt = function(a, b){
-		if (arrayLen(arguments) == 1){
-			b = a;
+	this.lt = function(a, b = '**null**'){
+		if (isSimpleValue(b) && b == '**null**'){
+			b = duplicate(a);
 			a = this.version;
 		}
-		return compare(a, b) < 0;
+		return this.compare(a, b) < 0;
 	};
 
 	/*
 		Pass 1 argument to compare this == arg
 		Pass 2 arguments to compare left == right
 	*/
-	this.eq = function(a, b){
-		if (arrayLen(arguments) == 1){
-			b = a;
+	this.eq = function(a, b = '**null**'){
+		if (isSimpleValue(b) && b == '**null**'){
+			b = duplicate(a);
 			a = this.version;
 		}
 		return compare(a, b) == 0;
@@ -253,9 +251,9 @@ component {
 		Pass 1 argument to compare this != arg
 		Pass 2 arguments to compare left != right
 	*/
-	this.neq = function(a, b){
-		if (arrayLen(arguments) == 1){
-			b = a;
+	this.neq = function(a, b = '**null**'){
+		if (isSimpleValue(b) && b == '**null**'){
+			b = duplicate(a);
 			a = this.version;
 		}
 		return compare(a, b) != 0;
@@ -265,9 +263,9 @@ component {
 		Pass 1 argument to compare this >= arg
 		Pass 2 arguments to compare left >= right
 	*/
-	this.gte = function(a, b){
-		if (arrayLen(arguments) == 1){
-			b = a;
+	this.gte = function(a, b = '**null**'){
+		if (isSimpleValue(b) && b == '**null**'){
+			b = duplicate(a);
 			a = this.version;
 		}
 		return compare(a, b) >= 0;
@@ -277,9 +275,9 @@ component {
 		Pass 1 argument to compare this <= arg
 		Pass 2 arguments to compare left <= right
 	*/
-	this.lte = function(a, b){
-		if (arrayLen(arguments) == 1){
-			b = a;
+	this.lte = function(a, b = '**null**'){
+		if (isSimpleValue(b) && b == '**null**'){
+			b = duplicate(a);
 			a = this.version;
 		}
 		return compare(a, b) <= 0;
