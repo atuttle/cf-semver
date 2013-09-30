@@ -101,7 +101,9 @@ component {
 	function valid(version){
 		try{
 			var v = parse(version);
-			return true;
+			return '#v[1]#.#v[2]#.#v[3]#'
+	               & (len(v[4]) ? '-#v[4]#' : '')
+	               & (len(v[5]) ? '+#v[5]#' : '');
 		}catch(any e){
 			return false;
 		}
@@ -109,11 +111,6 @@ component {
 
 
 /*
-	function clean(version, loose = false){
-		//implementation is just a copy of valid, so reuse it
-		return this.valid(version, loose);
-	}
-
 	function inspect(){
 		return '<SemVer "' & this.version & '">';
 	}

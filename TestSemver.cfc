@@ -63,20 +63,20 @@
 	function valid_tests(){
 		arrayEach(
 			[
-				{ valid: true, version: '1.0.0' }
-				,{ valid: true, version: 'v1.0.0' }
-				,{ valid: true, version: '=1.0.0' }
-				,{ valid: true, version: '1.0' }
-				,{ valid: true, version: 'v1.0' }
-				,{ valid: true, version: '=1.0' }
-				,{ valid: true, version: '1' }
-				,{ valid: true, version: 'v1' }
-				,{ valid: true, version: '=1' }
-				,{ valid: true, version: '*' }
-				,{ valid: true, version: 'v*' }
-				,{ valid: true, version: '=*' }
-				,{ valid: true, version: '1.1.1-alpha1' }
-				,{ valid: true, version: '1.1.1-alpha1+2121' }
+				 { valid: true, version: '1.0.0', strict: '1.0.0' }
+				,{ valid: true, version: 'v1.0.0', strict: '1.0.0' }
+				,{ valid: true, version: '=1.0.0', strict: '1.0.0' }
+				,{ valid: true, version: '1.0', strict: '1.0.0' }
+				,{ valid: true, version: 'v1.0', strict: '1.0.0' }
+				,{ valid: true, version: '=1.0', strict: '1.0.0' }
+				,{ valid: true, version: '1', strict: '1.0.0' }
+				,{ valid: true, version: 'v1', strict: '1.0.0' }
+				,{ valid: true, version: '=1', strict: '1.0.0' }
+				,{ valid: true, version: '*', strict: '*.*.*' }
+				,{ valid: true, version: 'v*', strict: '*.*.*' }
+				,{ valid: true, version: '=*', strict: '*.*.*' }
+				,{ valid: true, version: '1.1.1-alpha1', strict: '1.1.1-alpha1' }
+				,{ valid: true, version: '1.1.1-alpha1+2121', strict: '1.1.1-alpha1+2121' }
 				,{ valid: false, version: 'git@github.com:atuttle/Taffy.git' }
 				,{ valid: false, version: 'https://github.com/atuttle/Taffy.git' }
 				,{ valid: false, version: 'https://github.com/atuttle/Taffy' }
@@ -86,7 +86,7 @@
 			]
 			, function(ver){
 				if (ver.valid){
-					assertTrue( semver.valid(ver.version), 'FAILED TRUE ASSERTION: #ver.version#' );
+					assertEquals( ver.strict, semver.valid(ver.version), 'FAILED TRUE ASSERTION: #ver.version#' );
 				}else{
 					assertFalse( semver.valid(ver.version), 'FAILED FALSE ASSERTION: #ver.version#' );
 				}
