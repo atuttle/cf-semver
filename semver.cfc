@@ -33,9 +33,7 @@ component {
 		this.build = parsedVersion[5];
 
 		this.raw = arguments.version;
-		this.version = '#this.major#.#this.minor#.#this.patch#'
-		               & (len(this.pre)   ? '-#this.pre#'   : '')
-		               & (len(this.build) ? '+#this.build#' : '');
+		format();
 		return this;
 	}
 
@@ -96,6 +94,12 @@ component {
 			}
 		}
 		return [MAJOR, MINOR, PATCH, PRE, BUILD];
+	}
+
+	function format(){
+		this.version = '#this.major#.#this.minor#.#this.patch#'
+		               & (len(this.pre)   ? '-#this.pre#'   : '')
+		               & (len(this.build) ? '+#this.build#' : '');
 	}
 
 	function valid(version){
