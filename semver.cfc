@@ -25,61 +25,77 @@ component {
 			throw "InvalidSemverException";
 		}
 
-		this.loose = arguments.loose;
+		var parsedVersion = parse(arguments.version);
+		this.major = parsedVersion[1];
+		this.minor = parsedVersion[2];
+		this.patch = parsedVersion[3];
+		this.pre   = parsedVersion[4];
+		this.build = parsedVersion[5];
+
+		this.raw = arguments.version;
+		this.version = '#this.major#.#this.minor#.#this.patch#'
+		               & (len(this.pre)   ? '-#this.pre#'   : '')
+		               & (len(this.build) ? '+#this.build#' : '');
+		return this;
+	}
+
+	function valid(version){
+		try{
+			var v = parse(version);
+			return true;
+		}catch(any e){
+			return false;
+		}
+	}
+
+	private function parse(versionString){
+		var v = arguments.versionString;
+		var MAJOR = 0;
+		var MINOR = 0;
+		var PATCH = 0;
+		var PRE = '';
+		var BUILD = '';
 
 		//strip ignorable characters
-		var v = arguments.version;
 		if (left(v, 1) == "v" || left(v, 1) == "="){
 			v = right(v, len(v)-1);
 		}
 		//save the prerelease string
-		this.pre = listRest(v, '-');
+		PRE = listRest(v, '-');
+		BUILD = listRest(PRE, '+');
+		PRE = listFirst(PRE, '+');
 		//split into major.minor.patch values
 		var blocks = listToArray(v, '-');
 		var versions = listToArray(blocks[1], '.');
 		if (isNumeric(versions[1])){
-			this.major = val( versions[1] );
+			MAJOR = val( versions[1] );
 		}else if (versions[1] == '*'){
-			this.major = '*';
-			this.minor = '*';
-			this.patch = '*';
+			MAJOR = '*';
+			MINOR = '*';
+			PATCH = '*';
 		}else{
 			throw "InvalidSemverException";
 		}
-		if (this.minor == 0){
+		if (MINOR == 0){
 			if (arrayLen(versions) > 1){
 				if (versions[2] == '*'){
-					this.minor = '*';
-					this.patch = '*';
+					MINOR = '*';
+					PATCH = '*';
 				}else{
-					this.minor = val( versions[2] );
+					MINOR = val( versions[2] );
 				}
 			}
 		}
-		if (this.patch == 0){
+		if (PATCH == 0){
 			if (arrayLen(versions) > 2){
 				if (versions[3] == '*'){
-					this.patch = '*';
+					PATCH = '*';
 				}else{
-					this.patch = val( versions[3] );
+					PATCH = val( versions[3] );
 				}
 			}
 		}
-
-		this.raw = '#this.major#.#this.minor#.#this.patch#' & (len(this.pre) ? '-#this.pre#' : '');
-		this.build = listRest(this.pre, '+');
-		this.pre = listFirst(this.pre, '+');
-		this.version = format();
-		return this;
-	}
-
-	function format(){
-		return '#this.major#.#this.minor#.#this.patch#' & (len(this.pre) ? '-#this.pre#' : '');
-	}
-
-	function valid(version){
-		var v = this.parse(version, loose);
-		return (v != '') ? v.version : v;
+		return [MAJOR, MINOR, PATCH, PRE, BUILD];
 	}
 
 /*
