@@ -24,44 +24,48 @@ component {
 				arguments.version = arguments.version.version;
 			}
 		}
+		arguments.version = trim(arguments.version);
+		if (!len(arguments.version)){
+			throw "InvalidSemverException";
+		}
+
 		this.loose = arguments.loose;
-		if (len(arguments.version)){
-			//strip ignorable characters
-			var v = arguments.version;
-			if (left(v, 1) == "v" || left(v, 1) == "="){
-				v = right(v, len(v)-1);
-			}
-			//save the prerelease string
-			this.pre = listRest(v, '-');
-			//split into major.minor.patch values
-			var blocks = listToArray(v, '-');
-			var versions = listToArray(blocks[1], '.');
-			if (isNumeric(versions[1])){
-				this.major = val( versions[1] );
-			}else if (versions[1] == '*'){
-				this.major = '*';
-				this.minor = '*';
-				this.patch = '*';
-			}else{
-				throw "InvalidSemverException";
-			}
-			if (this.minor == 0){
-				if (arrayLen(versions) > 1){
-					if (versions[2] == '*'){
-						this.minor = '*';
-						this.patch = '*';
-					}else{
-						this.minor = val( versions[2] );
-					}
+
+		//strip ignorable characters
+		var v = arguments.version;
+		if (left(v, 1) == "v" || left(v, 1) == "="){
+			v = right(v, len(v)-1);
+		}
+		//save the prerelease string
+		this.pre = listRest(v, '-');
+		//split into major.minor.patch values
+		var blocks = listToArray(v, '-');
+		var versions = listToArray(blocks[1], '.');
+		if (isNumeric(versions[1])){
+			this.major = val( versions[1] );
+		}else if (versions[1] == '*'){
+			this.major = '*';
+			this.minor = '*';
+			this.patch = '*';
+		}else{
+			throw "InvalidSemverException";
+		}
+		if (this.minor == 0){
+			if (arrayLen(versions) > 1){
+				if (versions[2] == '*'){
+					this.minor = '*';
+					this.patch = '*';
+				}else{
+					this.minor = val( versions[2] );
 				}
 			}
-			if (this.patch == 0){
-				if (arrayLen(versions) > 2){
-					if (versions[3] == '*'){
-						this.patch = '*';
-					}else{
-						this.patch = val( versions[3] );
-					}
+		}
+		if (this.patch == 0){
+			if (arrayLen(versions) > 2){
+				if (versions[3] == '*'){
+					this.patch = '*';
+				}else{
+					this.patch = val( versions[3] );
 				}
 			}
 		}
