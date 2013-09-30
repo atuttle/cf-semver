@@ -184,38 +184,15 @@ component {
 		                  0;
 	}
 
-
-/*
-	function inspect(){
-		return '<SemVer "' & this.version & '">';
-	}
-
-	//replaces the class method "inc"
-	private function incSemver(version, release, loose = false){
-		try {
-			return new semver(version, loose)._inc(release).version;
-		}catch (any e){
-			return '';
+	/*
+		Pass 1 argument to increment this instance of a semver;
+		Pass 2 arguments to create a new semver and increment it
+	*/
+	function inc(release, version){
+		if (arrayLen(arguments) == 2){
+			return new semver(version).inc(release);
 		}
-	}
-
-	//port of the instance method
-	function inc(version, release, loose = false){
-
-
-		/*
-			this is a kind of wonky way to cram 2 methods into one, since CF doesn't have prototypes
-			if there are 3 arguments, shunt off to the private method; otherwise re-map arguments to
-			the desired method signature & continue...
-		* /
-		//if there's more than one argument, hand the request off to
-		if (arrayLen(arguments) >= 2){
-			return incSemver(version, release, loose);
-		}
-		//re-wire as per above comment
-		arguments.release = version;
-
-		switch(arguments.release){
+		switch(trim(lcase(arguments.release))){
 			case "major":
 				this.major++;
 				this.minor = -1;
@@ -228,57 +205,18 @@ component {
 				this.patch++;
 				this.prerelease = [];
 				break;
-			case "prerelease":
-				if (arrayLen(this.prerelease) == 0) {
-					this.prerelease = [0];
-				}else{
-					var i = arrayLen(this.prerelease);
-					while (--i >= 0) {
-						if (isNumeric(this.prerelease[i])) {
-							this.prerelease[i]++;
-							i = -2;
-						}
-					}
-					if (i == -1) { // didn't increment anything
-						arrayAppend(this.prerelease, 0);
-					}
-				}
-				break;
 			default:
-				throw "Invalid increment argument: `#arguments.release#`";
+				throw "Invalid increment argument: `#arguments.release#`; Expects one of: (major, minor, patch)";
 		}
-		this.format();
+		format();
 		return this;
-	};
+	}
 
-	function rcompareIdentifiers(a, b){
-		return compareIdentifiers(b, a);
-	};
 
-	function compareSemvers(a, b, loose = false){
-		return new semver(a, loose).compare(b);
-	};
-
-	function compareLoose(a, b){
-		return compareSemvers(a, b, true);
-	};
-
-	function rcompare(a, b, loose = false){
-		return compareSemvers(b, a, loose);
-	};
-
-	function sort(list, loose = false){
-		var sorter = function(a, b){
-			return this.compareSemvers(a, b, loose);
-		};
-		arraySort(list, sorter);
-	};
-
-	function rsort(list, loose = false){
-		var sorter = function(a, b){
-			return rcompare(a, b, loose);
-		};
-	};
+/*
+	function inspect(){
+		return '<SemVer "' & this.version & '">';
+	}
 
 	this.gt = function(a, b, loose = false){
 		return this.compareSemvers(a, b, loose) > 0;
