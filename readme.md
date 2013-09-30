@@ -1,6 +1,37 @@
 # SemVer
 
-Semantic Version parsing, management, etc for CFML. It conforms to the [SemVer 2.0.0 specification](http://semver.org/spec/v2.0.0.html).
+Semantic Version parsing, management, etc for CFML. Specified by and conforms to the [SemVer 2.0.0 specification](http://semver.org/spec/v2.0.0.html).
+
+##TL;DR:
+
+**major.minor.patch-prerelease+build**
+
+* major, minor, patch: numeric
+* prerelease, build: alphanumeric (though apparently some people choose to use a major.minor.patch in the prerelease string?)
+
+---
+
+* Breaking changes, major additions: increment Major
+* New minor features: increment Minor
+* Bug fixes: increment patch
+
+**0.\*.\*** is considered volatile and may include breaking changes between minor or patch versions.
+
+A prerelease string (any value) is considered a lower version than the same version number with no pre string. Thus: `0.0.1` > `0.0.1-beta`.
+
+Prerelease strings are compared alphanumerically; thus: `1.0.0-alpha1` < `1.0.0-alpha2` < `1.0.0-beta` < `1.0.0`
+
+### Prefixes
+
+A leading `v` or `=` will be stripped and ignored, e.g. `v2.3.0`
+
+### Wildcards
+
+An asterisk `*` is acceptable for any value in the semver string: `1.2.*`
+
+## Ranges
+
+TBD
 
 ## Contributing
 
@@ -12,21 +43,24 @@ Want to help out? Found a bug? Great! Check out [the Contribution Guide](https:/
 
 ## License
 
-Because this project started its life as a port of the [Node.js SemVer Module](https://github.com/isaacs/node-semver), and owes most of its success to the brains of those who originally coded its regular expressions, it will continue to use the same license type (BSD).
+Freely available under the MIT License.
 
-> Copyright (c) 2013, Adam Tuttle<br/>
-> All rights reserved.
+> Copyright (c) 2013 Adam Tuttle and Contributors
 >
-> Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+> Permission is hereby granted, free of charge, to any person obtaining a copy
+> of this software and associated documentation files (the "Software"), to deal
+> in the Software without restriction, including without limitation the rights
+> to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+> copies of the Software, and to permit persons to whom the Software is
+> furnished to do so, subject to the following conditions:
 >
->* Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
->* Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
->* Neither the name of the project nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+> The above copyright notice and this permission notice shall be included in
+> all copies or substantial portions of the Software.
 >
-> THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-### Port Details
-
-Based on code by Isaac Schlueter.
-
-https://github.com/isaacs/node-semver
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+> IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+> FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+> AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+> LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+> OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+> THE SOFTWARE.
