@@ -1,20 +1,22 @@
-/*
-	This CFC is mostly a port (with CF-specific updates) of the Node.js semver package, by Isaac Schlueter @izs
-
-	I can't take credit for anything genius within, but I do claim ownership of port-specific bugs!
-
-	The original module was available under the BSD license, therefore this port will also use the BSD license.
-	http://opensource.org/licenses/BSD-3-Clause
-*/
-component extends="semverrules" {
+component {
 
 	/******************************************************************************************************************
 	 *	Use this odd (to CF) function declaration syntax so we can overload 1st class function names like EQ and GTE
 	 *    this.x = function( ... ){ ... }
 	 *****************************************************************************************************************/
 
-	//ported from function SemVer()
+	this.semver_spec_version = '2.0.0';
+
+	this.loose = false;
+	this.major = 0;
+	this.minor = 0;
+	this.patch = 0;
+	this.pre = '';
+	this.build = '';
+	this.raw = '';
+
 	function init(version, loose = false){
+		//if passed another semver object, double check looseness; either return it (if same) or clone it (if different)
 		if (isInstanceOf(arguments.version, "semver")){
 			if (arguments.version.loose == arguments.loose){
 				return arguments.version;
@@ -24,36 +26,61 @@ component extends="semverrules" {
 		}
 		this.loose = arguments.loose;
 		if (len(arguments.version)){
-			var r = this.loose ? this.src[variables.LOOSE] : this.src[variables.FULL];
-			var m = reMatch(r, trim(arguments.version));
-			if (!arrayLen(m)){
-				throw "Invalid version `#arguments.version#`";
+			//strip ignorable characters
+			var v = arguments.version;
+			if (left(v, 1) == "v" || left(v, 1) == "="){
+				v = right(v, len(v)-1);
 			}
-		}else{
-			arguments.version = '*';
-			var m = ['*','*','*'];
+			//save the prerelease string
+			this.pre = listRest(v, '-');
+			//split into major.minor.patch values
+			var blocks = listToArray(v, '-');
+			var versions = listToArray(blocks[1], '.');
+			if (isNumeric(versions[1])){
+				this.major = val( versions[1] );
+			}else if (versions[1] == '*'){
+				this.major = '*';
+				this.minor = '*';
+				this.patch = '*';
+			}else{
+				throw "InvalidSemverException";
+			}
+			if (this.minor == 0){
+				if (arrayLen(versions) > 1){
+					if (versions[2] == '*'){
+						this.minor = '*';
+						this.patch = '*';
+					}else{
+						this.minor = val( versions[2] );
+					}
+				}
+			}
+			if (this.patch == 0){
+				if (arrayLen(versions) > 2){
+					if (versions[3] == '*'){
+						this.patch = '*';
+					}else{
+						this.patch = val( versions[3] );
+					}
+				}
+			}
 		}
 
-		this.raw = arguments.version;
+		this.raw = '#this.major#.#this.minor#.#this.patch#' & (len(this.pre) ? '-#this.pre#' : '');
 
-		//these are actually numbers
-		if (find(".", m[1]) > 0){
-			m = listToArray(m[1], '.');
-		}
-		this.major = val(m[1]);
-		this.minor = val(m[2]);
-		this.patch = val(listFirst(m[3], '-'));
-		this.prerelease = listToArray(listFirst(listRest(m[3], '-'), '+'), '.'); //pre comes between a hyphen and a plus
-		this.build = listToArray(listRest(m[3], '+'), '.'); //build comes after a hyphen and can be dot-delimited
+		this.build = listRest(this.pre, '+');
+		this.pre = listFirst(this.pre, '+');
 
-		format();
-// writeDump(var={v=this.version},label='semver constructor');
-
-// writeDump(var=this.src[this.HYPHENRANGE],abort=true);
+		this.version = format();
 
 		return this;
 	}
 
+	function format(){
+		return '#this.major#.#this.minor#.#this.patch#' & (len(this.pre) ? '-#this.pre#' : '');
+	}
+
+/*
 	function parse(version, loose = false){
 		var r = loose ? src[LOOSE] : src[FULL];
 		return (reFind(r, version) > 0) ? new semver(version, loose) : '';
@@ -142,7 +169,7 @@ component extends="semverrules" {
 			this is a kind of wonky way to cram 2 methods into one, since CF doesn't have prototypes
 			if there are 3 arguments, shunt off to the private method; otherwise re-map arguments to
 			the desired method signature & continue...
-		*/
+		* /
 		//if there's more than one argument, hand the request off to
 		if (arrayLen(arguments) >= 2){
 			return incSemver(version, release, loose);
@@ -265,13 +292,6 @@ component extends="semverrules" {
 		}
 		return ret;
 	};
-
-	function format(){
-		this.version = "#this.major#.#this.minor#.#this.patch#";
-		if (arrayLen(this.prerelease)){
-			this.version &= '-' & arrayToList(this.prerelease, '.');
-		}
-		return this.version;
-	};
+*/
 
 }

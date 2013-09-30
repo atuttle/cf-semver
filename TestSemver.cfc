@@ -1,7 +1,7 @@
 <cfcomponent extends="mxunit.framework.TestCase"><cfscript>
 
 	variables.semver = createObject("component", "semver");
-	variables.range = createObject("component", "range");
+	// variables.range = createObject("component", "range");
 
 	//before suite
 	function beforeTests(){}
@@ -17,31 +17,6 @@
 
 	//--------------------------------
 
-	function satisfies_interface(){
-		assertIsDefined("semver.SEMVER_SPEC_VERSION", "Missing SemVer Spec Version");
-		assertIsDefined("semver.parse", "Missing `parse` function");
-		assertIsDefined("semver.valid", "Missing `valid` function");
-		assertIsDefined("semver.clean", "Missing `clean` function");
-		assertIsDefined("semver.inc", "Missing `inc` function");
-		assertIsDefined("semver.compareIdentifiers", "Missing `compareIdentifiers` function");
-		assertIsDefined("semver.rcompareIdentifiers", "Missing `rcompareIdentifiers` function");
-		assertIsDefined("semver.compare", "Missing `compare` function");
-		assertIsDefined("semver.compareLoose", "Missing `compareLoose` function");
-		assertIsDefined("semver.rcompare", "Missing `rcompare` function");
-		assertIsDefined("semver.sort", "Missing `sort` function");
-		assertIsDefined("semver.rsort", "Missing `rsort` function");
-		assertIsDefined("semver.gt", "Missing `gt` function");
-		assertIsDefined("semver.lt", "Missing `lt` function");
-		assertIsDefined("semver.eq", "Missing `eq` function");
-		assertIsDefined("semver.neq", "Missing `neq` function");
-		assertIsDefined("semver.gte", "Missing `gte` function");
-		assertIsDefined("semver.lte", "Missing `lte` function");
-		assertIsDefined("semver.cmp", "Missing `cmp` function");
-		// assertIsDefined("semver.toComparators", "Missing `toComparators` function");
-		assertIsDefined("range.satisfies", "Missing `satisfies` function");
-		assertIsDefined("range.maxSatisfying", "Missing `maxSatisfying` function");
-	}
-
 	function simple_contsructor_tests(){
 		var a = new semver('1.0.0');
 		var b = new semver(a);
@@ -55,6 +30,42 @@
 		assertEquals(true, c.loose);
 	}
 
+	function leading_characters_ignored_tests(){
+		var a = new semver('v1.2.3');
+		var b = new semver('=4.5.6');
+		debug(a);
+		debug(b);
+		assertEquals('1.2.3', a.version);
+		assertEquals('4.5.6', b.version);
+	}
+
+	function defaults_tests(){
+		var a = new semver('1');
+		debug(a);
+		assertEquals(1, a.major);
+		assertEquals(0, a.minor);
+		assertEquals(0, a.patch);
+	}
+
+	function wildcard_tests(){
+		var a = new semver('1.*.*');
+		var b = new semver('*');
+		var c = new semver('1.*');
+		debug(a);
+		assertEquals(1,   a.major);
+		assertEquals('*', a.minor);
+		assertEquals('*', a.patch);
+		debug(b);
+		assertEquals('*', b.major);
+		assertEquals('*', b.minor);
+		assertEquals('*', b.patch);
+		debug(c);
+		assertEquals(1, c.major);
+		assertEquals('*', c.minor);
+		assertEquals('*', c.patch);
+	}
+
+/*
 	function comparison_tests(){
 		// [version1, version2]
 		// version1 should be greater than version2
@@ -446,9 +457,9 @@
 				var pre = v[1];
 				var wanted = v[2];
 				var loose = (arrayLen(v) >= 3) ? v[3] : false;
-				var found = semver.validRange(pre, loose);
+				var found = range.validRange(pre, loose);
 
-				assertEquals(wanted, found, 'validRange(' & pre & ') === ' & wanted);
+				assertEquals(wanted, found, 'validRange(' & pre & ') == ' & wanted);
 			}
 		);
 	}
@@ -609,5 +620,6 @@
 			}
 		);
 	}
+*/
 
 </cfscript></cfcomponent>
